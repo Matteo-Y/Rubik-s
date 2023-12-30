@@ -74,9 +74,9 @@ public class MainActivity extends CameraActivity {
         sendButton = findViewById(R.id.send);
         disconnectButton = findViewById(R.id.disconnect);
 
-        connectButton.setOnClickListener(v -> connectUSB());
-        sendButton.setOnClickListener((v) -> writeUSB("data"));
-        disconnectButton.setOnClickListener((v) -> disconnectUSB());
+//        connectButton.setOnClickListener(v -> connectUSB());
+//        sendButton.setOnClickListener((v) -> writeUSB("data"));
+//        disconnectButton.setOnClickListener((v) -> disconnectUSB());
 
         cameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2() {
             @Override
@@ -90,12 +90,40 @@ public class MainActivity extends CameraActivity {
             }
         });
 
+        Toast permRequest = Toast.makeText(this, "Need permission", Toast.LENGTH_LONG);
+        BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intent.getAction() != null && intent.getAction() == ACTION_USB_PERMISSION) {
+                    boolean permGranted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
+                    if(permGranted) {
+                        usbConnection = usbManager.openDevice(usbDevice);
+                        usbSerial = UsbSerialDevice.createUsbSerialDevice(usbDevice, usbConnection);
+                        if(usbSerial != null) {
+                            if(usbSerial.open()) {
+                                usbSerial.setBaudRate(9600);
+                                usbSerial.setDataBits(UsbSerialInterface.DATA_BITS_8);
+                                usbSerial.setStopBits(UsbSerialInterface.STOP_BITS_1);
+                                usbSerial.setParity(UsbSerialInterface.PARITY_NONE);
+                                usbSerial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
+                            }
+                        }
+                    } else {
+                        permRequest.show();
+                    }
+                } else if(intent.getAction() != null && intent.getAction() == UsbManager.ACTION_USB_ACCESSORY_ATTACHED) {
+                    connectUSB();
+                } else if(intent.getAction() != null && intent.getAction() == UsbManager.ACTION_USB_ACCESSORY_DETACHED) {
+                    disconnectUSB();
+                }
+            }
+        };
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_USB_PERMISSION);
         filter.addAction(UsbManager.ACTION_USB_ACCESSORY_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        registerReceiver(broadcastReceiver, filter);
+        this.registerReceiver(broadcastReceiver, filter, RECEIVER_NOT_EXPORTED);
 
         if(OpenCVLoader.initDebug()) {
             cameraView.enableView();
@@ -106,35 +134,6 @@ public class MainActivity extends CameraActivity {
         }
     }
 
-
-    Toast permRequest = Toast.makeText(this, "Need permission", Toast.LENGTH_LONG);
-    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(intent.getAction() != null && intent.getAction() == ACTION_USB_PERMISSION) {
-                boolean permGranted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
-                if(permGranted) {
-                    usbConnection = usbManager.openDevice(usbDevice);
-                    usbSerial = UsbSerialDevice.createUsbSerialDevice(usbDevice, usbConnection);
-                    if(usbSerial != null) {
-                        if(usbSerial.open()) {
-                            usbSerial.setBaudRate(9600);
-                            usbSerial.setDataBits(UsbSerialInterface.DATA_BITS_8);
-                            usbSerial.setStopBits(UsbSerialInterface.STOP_BITS_1);
-                            usbSerial.setParity(UsbSerialInterface.PARITY_NONE);
-                            usbSerial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
-                        }
-                    }
-                } else {
-                    permRequest.show();
-                }
-            } else if(intent.getAction() != null && intent.getAction() == UsbManager.ACTION_USB_ACCESSORY_ATTACHED) {
-                connectUSB();
-            } else if(intent.getAction() != null && intent.getAction() == UsbManager.ACTION_USB_ACCESSORY_DETACHED) {
-                disconnectUSB();
-            }
-        }
-    };
     public void connectUSB() {
         // Arduino vendorID: 2341
         HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
