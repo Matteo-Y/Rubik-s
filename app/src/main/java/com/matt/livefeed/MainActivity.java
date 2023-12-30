@@ -1,19 +1,25 @@
 package com.matt.livefeed;
 
-import static org.opencv.imgproc.Imgproc.cvtColor;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import android.Manifest;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Pair;
-import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import com.felhr.usbserial.UsbSerialDevice;
+import com.felhr.usbserial.UsbSerialInterface;
 
 import org.opencv.android.CameraActivity;
 import org.opencv.android.CameraBridgeViewBase;
@@ -24,21 +30,18 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Map;
 
 public class MainActivity extends CameraActivity {
-    int CAMERA_PERM_CODE = 100;
-    private Scalar[][] colorRanges = {
+    final int CAMERA_PERM_CODE = 100, USB_CODE = 101;
+    private final Scalar[][] colorRanges = {
             {new Scalar(96.0, 180.0, 110.0), new Scalar(130.0, 256.0, 256.0)}, //blue
             {new Scalar(5.0, 120.0, 165.0),  new Scalar(17.0, 256.0, 256.0)}, //orange
             {new Scalar(21.0, 55.0, 117.0),  new Scalar(40.0, 256.0, 256.0)}, //yellow
@@ -49,6 +52,15 @@ public class MainActivity extends CameraActivity {
     };
     
     CameraBridgeViewBase cameraView;
+    Button connectButton;
+    Button sendButton;
+    Button disconnectButton;
+
+    String ACTION_USB_PERMISSION = "permission";
+    UsbManager usbManager;
+    UsbDevice usbDevice = null;
+    UsbSerialDevice usbSerial = null;
+    UsbDeviceConnection usbConnection = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +70,13 @@ public class MainActivity extends CameraActivity {
         getPermission();
 
         cameraView = findViewById(R.id.cameraView);
+        connectButton = findViewById(R.id.connect);
+        sendButton = findViewById(R.id.send);
+        disconnectButton = findViewById(R.id.disconnect);
+
+        connectButton.setOnClickListener(v -> connectUSB());
+        sendButton.setOnClickListener((v) -> writeUSB("data"));
+        disconnectButton.setOnClickListener((v) -> disconnectUSB());
 
         cameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2() {
             @Override
@@ -71,6 +90,13 @@ public class MainActivity extends CameraActivity {
             }
         });
 
+        usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_USB_PERMISSION);
+        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        registerReceiver(broadcastReceiver, filter);
+
         if(OpenCVLoader.initDebug()) {
             cameraView.enableView();
             Log.d("LOADED", "Success!");
@@ -79,6 +105,66 @@ public class MainActivity extends CameraActivity {
             Log.d("LOADED", "Error.");
         }
     }
+
+
+    Toast permRequest = Toast.makeText(this, "Need permission", Toast.LENGTH_LONG);
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction() != null && intent.getAction() == ACTION_USB_PERMISSION) {
+                boolean permGranted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
+                if(permGranted) {
+                    usbConnection = usbManager.openDevice(usbDevice);
+                    usbSerial = UsbSerialDevice.createUsbSerialDevice(usbDevice, usbConnection);
+                    if(usbSerial != null) {
+                        if(usbSerial.open()) {
+                            usbSerial.setBaudRate(9600);
+                            usbSerial.setDataBits(UsbSerialInterface.DATA_BITS_8);
+                            usbSerial.setStopBits(UsbSerialInterface.STOP_BITS_1);
+                            usbSerial.setParity(UsbSerialInterface.PARITY_NONE);
+                            usbSerial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
+                        }
+                    }
+                } else {
+                    permRequest.show();
+                }
+            } else if(intent.getAction() != null && intent.getAction() == UsbManager.ACTION_USB_ACCESSORY_ATTACHED) {
+                connectUSB();
+            } else if(intent.getAction() != null && intent.getAction() == UsbManager.ACTION_USB_ACCESSORY_DETACHED) {
+                disconnectUSB();
+            }
+        }
+    };
+    public void connectUSB() {
+        // Arduino vendorID: 2341
+        HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
+        if(usbDevices.isEmpty()) return;
+        for(Map.Entry<String, UsbDevice> entry: usbDevices.entrySet()) {
+            usbDevice = entry.getValue();
+            if(usbDevice.getVendorId() == 2341) {
+                PendingIntent intent;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    intent = PendingIntent.getBroadcast(this, USB_CODE, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_MUTABLE);
+                } else {
+                    intent = PendingIntent.getBroadcast(this, USB_CODE, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE);
+                }
+                usbManager.requestPermission(usbDevice, intent);
+                Toast.makeText(this, "successful connected", Toast.LENGTH_LONG).show();
+            } else {
+                usbConnection = null;
+                usbDevice = null;
+                Toast.makeText(this, "failed connected", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    public void writeUSB(String data) {
+        usbSerial.write(data.getBytes());
+        Toast.makeText(this, "sending data: " + data + " || " + data.getBytes(), Toast.LENGTH_LONG).show();
+    }
+    public void disconnectUSB() {
+        usbSerial.close();
+    }
+
 
     public Mat handleFrame(Mat input) {
         Mat output = input.clone();
@@ -121,7 +207,6 @@ public class MainActivity extends CameraActivity {
         Imgproc.circle(output, frameCenter, cubeRadius, new Scalar(255, 255, 255), 3);
         return output;
     }
-
     public LinkedList<Point> getColorLocations(int colorIndex, Mat input, Point center, int threshold) {
         // Highlight selected color
         Core.inRange(input, colorRanges[colorIndex][0], colorRanges[colorIndex][1], input);
@@ -146,7 +231,6 @@ public class MainActivity extends CameraActivity {
         }
         return points;
     }
-
     class PointColorPair {
         protected Point point;
         protected int color;
@@ -163,7 +247,6 @@ public class MainActivity extends CameraActivity {
             return color;
         }
     }
-
     public String indexToColor(int index) {
         String result = "";
         switch(index) {
@@ -185,17 +268,16 @@ public class MainActivity extends CameraActivity {
         return result;
     }
 
+
     @Override
     protected List<? extends CameraBridgeViewBase> getCameraViewList() {
         return Collections.singletonList(cameraView);
     }
-
     public void getPermission() {
         if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERM_CODE);
         }
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCoe, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCoe, permissions, grantResults);
@@ -203,4 +285,6 @@ public class MainActivity extends CameraActivity {
             getPermission();
         }
     }
+
+
 }
