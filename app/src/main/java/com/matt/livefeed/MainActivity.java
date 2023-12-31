@@ -30,6 +30,7 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -69,14 +70,16 @@ public class MainActivity extends CameraActivity {
 
         getPermission();
 
+        Toast debugMarker = Toast.makeText(this, "REACHED", Toast.LENGTH_SHORT);
+
         cameraView = findViewById(R.id.cameraView);
         connectButton = findViewById(R.id.connect);
         sendButton = findViewById(R.id.send);
         disconnectButton = findViewById(R.id.disconnect);
 
-//        connectButton.setOnClickListener(v -> connectUSB());
-//        sendButton.setOnClickListener((v) -> writeUSB("data"));
-//        disconnectButton.setOnClickListener((v) -> disconnectUSB());
+        connectButton.setOnClickListener(v -> connectUSB());
+        sendButton.setOnClickListener((v) -> writeUSB("data"));
+        disconnectButton.setOnClickListener((v) -> disconnectUSB());
 
         cameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2() {
             @Override
@@ -90,12 +93,15 @@ public class MainActivity extends CameraActivity {
             }
         });
 
-        Toast permRequest = Toast.makeText(this, "Need permission", Toast.LENGTH_LONG);
+
+        Toast successfulOpen = Toast.makeText(this, "serial succeeded", Toast.LENGTH_SHORT);
+        Toast failedOpen = Toast.makeText(this, "serial failed", Toast.LENGTH_SHORT);
         BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if(intent.getAction() != null && intent.getAction() == ACTION_USB_PERMISSION) {
-                    boolean permGranted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
+                    boolean permGranted = false;
+                    if(intent.getExtras() != null) permGranted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
                     if(permGranted) {
                         usbConnection = usbManager.openDevice(usbDevice);
                         usbSerial = UsbSerialDevice.createUsbSerialDevice(usbDevice, usbConnection);
@@ -106,14 +112,14 @@ public class MainActivity extends CameraActivity {
                                 usbSerial.setStopBits(UsbSerialInterface.STOP_BITS_1);
                                 usbSerial.setParity(UsbSerialInterface.PARITY_NONE);
                                 usbSerial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
+                                successfulOpen.show();
                             }
+                        } else {
+                            failedOpen.show();
                         }
                     } else {
-                        permRequest.show();
                     }
-                } else if(intent.getAction() != null && intent.getAction() == UsbManager.ACTION_USB_ACCESSORY_ATTACHED) {
-                    connectUSB();
-                } else if(intent.getAction() != null && intent.getAction() == UsbManager.ACTION_USB_ACCESSORY_DETACHED) {
+                } else if(intent.getAction() != null && intent.getAction() == UsbManager.ACTION_USB_DEVICE_DETACHED) {
                     disconnectUSB();
                 }
             }
@@ -121,47 +127,44 @@ public class MainActivity extends CameraActivity {
         usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_USB_PERMISSION);
-        filter.addAction(UsbManager.ACTION_USB_ACCESSORY_ATTACHED);
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        this.registerReceiver(broadcastReceiver, filter, RECEIVER_NOT_EXPORTED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        this.registerReceiver(broadcastReceiver, filter, RECEIVER_EXPORTED);
 
         if(OpenCVLoader.initDebug()) {
             cameraView.enableView();
-            Log.d("LOADED", "Success!");
-        }
-        else {
-            Log.d("LOADED", "Error.");
         }
     }
 
     public void connectUSB() {
         // Arduino vendorID: 2341
         HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
-        if(usbDevices.isEmpty()) return;
+        if(usbDevices.isEmpty()) {
+            Toast.makeText(this, "no devices found", Toast.LENGTH_SHORT).show();
+            return;
+        }
         for(Map.Entry<String, UsbDevice> entry: usbDevices.entrySet()) {
             usbDevice = entry.getValue();
-            if(usbDevice.getVendorId() == 2341) {
+            if(usbDevice.getVendorId() == 9025) {
                 PendingIntent intent;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    intent = PendingIntent.getBroadcast(this, USB_CODE, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_MUTABLE);
-                } else {
-                    intent = PendingIntent.getBroadcast(this, USB_CODE, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE);
-                }
+                intent = PendingIntent.getBroadcast(this, USB_CODE, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT | PendingIntent.FLAG_MUTABLE);
                 usbManager.requestPermission(usbDevice, intent);
-                Toast.makeText(this, "successful connected", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "connection found", Toast.LENGTH_SHORT).show();
             } else {
-                usbConnection = null;
-                usbDevice = null;
-                Toast.makeText(this, "failed connected", Toast.LENGTH_LONG).show();
+                    usbConnection = null;
+                    usbDevice = null;
+                    Toast.makeText(this, "connection not found", Toast.LENGTH_SHORT).show();
             }
         }
     }
     public void writeUSB(String data) {
         usbSerial.write(data.getBytes());
-        Toast.makeText(this, "sending data: " + data + " || " + data.getBytes(), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "sending data: " + data, Toast.LENGTH_LONG).show();
     }
     public void disconnectUSB() {
-        usbSerial.close();
+        if(usbSerial != null) usbSerial.close();
+        usbConnection = null;
+        usbDevice = null;
+        Toast.makeText(this, "disconnected", Toast.LENGTH_LONG).show();
     }
 
 
@@ -249,19 +252,19 @@ public class MainActivity extends CameraActivity {
     public String indexToColor(int index) {
         String result = "";
         switch(index) {
-            case 0: result = "blue";
+            case 0: result = "B";
                     break;
-            case 1: result = "orange";
+            case 1: result = "O";
                     break;
-            case 2: result = "yellow";
+            case 2: result = "Y";
                     break;
-            case 3: result = "green";
+            case 3: result = "G";
                     break;
-            case 4: result = "red";
+            case 4: result = "R";
                     break;
-            case 5: result = "white";
+            case 5: result = "W";
                     break;
-            case 6: result = "red";
+            case 6: result = "R";
                     break;
         }
         return result;
