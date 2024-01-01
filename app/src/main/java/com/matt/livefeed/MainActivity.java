@@ -165,8 +165,8 @@ public class MainActivity extends CameraActivity {
         }
     }
     public void writeUSB(String data) {
+        if(usbDevice == null) return;
         usbSerial.write(data.getBytes());
-        lastSend.setText(byteArrayToStringList(data.getBytes()) + " | " + data);
     }
     public void disconnectUSB() {
         if(usbSerial != null) usbSerial.close();
@@ -228,6 +228,7 @@ public class MainActivity extends CameraActivity {
         }
         PointColorPair[] sortedCells = getSortedCells(cells);
         String outputStr = arrayToString(sortedCells);
+        lastSend.setText(byteArrayToStringList(outputStr.getBytes()) + " | " + outputStr);
         writeUSB(outputStr);
     }
     public String arrayToString(PointColorPair[] cells) {
