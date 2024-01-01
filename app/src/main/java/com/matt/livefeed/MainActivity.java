@@ -9,21 +9,26 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
 
 import org.opencv.android.CameraActivity;
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.JavaCameraView;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -51,10 +56,13 @@ public class MainActivity extends CameraActivity {
             {new Scalar(45.0, 80.0, 80.0),  new Scalar(80.0, 256.0, 256.0)}, //green
             {new Scalar(165.0, 114.0, 0.0),  new Scalar(179.0, 256.0, 256.0)}, //red
             {new Scalar(0.0, 0.0, 150.0),    new Scalar(255.0, 120.0, 256.0)}, //white
-            {new Scalar(0.0, 114.0, 136.0),  new Scalar(4.0, 256.0, 256.0)} //red IIe
+            {new Scalar(0.0, 100.0, 136.0),  new Scalar(4.0, 256.0, 256.0)} //red IIe
     };
     
-    CameraBridgeViewBase cameraView;
+    JavaCameraView cameraView;
+    ToggleButton flashlight;
+    CameraManager cameraManager;
+    String cameraID;
     TextView lastSend;
     Button connectButton;
     Button captureButton;
@@ -78,6 +86,8 @@ public class MainActivity extends CameraActivity {
         debugMarker = Toast.makeText(this, "REACHED", Toast.LENGTH_SHORT);
 
         cameraView = findViewById(R.id.cameraView);
+        flashlight = findViewById(R.id.flashlight);
+        cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
         lastSend = findViewById(R.id.lastSend);
 
@@ -98,6 +108,23 @@ public class MainActivity extends CameraActivity {
             @Override
             public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
                 return handleFrame(inputFrame.rgba());
+            }
+        });
+        try {
+            cameraID = cameraManager.getCameraIdList()[0];
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+        Toast flashOn = Toast.makeText(this, "on", Toast.LENGTH_SHORT);
+        Toast flashOff = Toast.makeText(this, "off", Toast.LENGTH_SHORT);
+        flashlight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (flashlight.isChecked()) {
+                    cameraView.turnOnTheFlash();
+                } else {
+                    cameraView.turnOffTheFlash();
+                }
             }
         });
 
