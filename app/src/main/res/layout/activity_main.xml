@@ -4,30 +4,39 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     tools:context=".MainActivity">
 
     <org.opencv.android.JavaCameraView
         android:id="@+id/cameraView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="564dp" />
+
+    <TextView
+        android:id="@+id/lastSend"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="105dp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/connect"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
         android:layout_width="120dp"
         android:layout_height="100dp"
         android:text="connect"/>
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/send"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="100dp"
+        android:id="@+id/capture"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:layout_width="120dp"
         android:layout_height="100dp"
-        android:text="send"/>
+        android:text="capture"/>
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/disconnect"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_marginTop="200dp"
         android:layout_width="120dp"
         android:layout_height="100dp"
         android:text="disconnect"/>

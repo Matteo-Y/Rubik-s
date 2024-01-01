@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.felhr.usbserial.UsbSerialDevice;
@@ -42,6 +43,7 @@ import java.util.Map;
 
 public class MainActivity extends CameraActivity {
     final int CAMERA_PERM_CODE = 100, USB_CODE = 101;
+    Toast debugMarker;
     private final Scalar[][] colorRanges = {
             {new Scalar(96.0, 180.0, 110.0), new Scalar(130.0, 256.0, 256.0)}, //blue
             {new Scalar(5.0, 120.0, 165.0),  new Scalar(17.0, 256.0, 256.0)}, //orange
@@ -49,13 +51,16 @@ public class MainActivity extends CameraActivity {
             {new Scalar(45.0, 80.0, 80.0),  new Scalar(80.0, 256.0, 256.0)}, //green
             {new Scalar(165.0, 114.0, 0.0),  new Scalar(179.0, 256.0, 256.0)}, //red
             {new Scalar(0.0, 0.0, 150.0),    new Scalar(255.0, 120.0, 256.0)}, //white
-            {new Scalar(0.0, 114.0, 136.0),  new Scalar(4.0, 256.0, 256.0)} //red II
+            {new Scalar(0.0, 114.0, 136.0),  new Scalar(4.0, 256.0, 256.0)} //red IIe
     };
     
     CameraBridgeViewBase cameraView;
+    TextView lastSend;
     Button connectButton;
-    Button sendButton;
+    Button captureButton;
     Button disconnectButton;
+
+    boolean captureFrame = false;
 
     String ACTION_USB_PERMISSION = "permission";
     UsbManager usbManager;
@@ -70,15 +75,18 @@ public class MainActivity extends CameraActivity {
 
         getPermission();
 
-        Toast debugMarker = Toast.makeText(this, "REACHED", Toast.LENGTH_SHORT);
+        debugMarker = Toast.makeText(this, "REACHED", Toast.LENGTH_SHORT);
 
         cameraView = findViewById(R.id.cameraView);
+
+        lastSend = findViewById(R.id.lastSend);
+
         connectButton = findViewById(R.id.connect);
-        sendButton = findViewById(R.id.send);
+        captureButton = findViewById(R.id.capture);
         disconnectButton = findViewById(R.id.disconnect);
 
         connectButton.setOnClickListener(v -> connectUSB());
-        sendButton.setOnClickListener((v) -> writeUSB("data"));
+        captureButton.setOnClickListener((v) -> captureFrame = true);
         disconnectButton.setOnClickListener((v) -> disconnectUSB());
 
         cameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2() {
@@ -158,7 +166,7 @@ public class MainActivity extends CameraActivity {
     }
     public void writeUSB(String data) {
         usbSerial.write(data.getBytes());
-        Toast.makeText(this, "sending data: " + data, Toast.LENGTH_LONG).show();
+        lastSend.setText(byteArrayToStringList(data.getBytes()) + " | " + data);
     }
     public void disconnectUSB() {
         if(usbSerial != null) usbSerial.close();
@@ -169,11 +177,12 @@ public class MainActivity extends CameraActivity {
 
 
     public Mat handleFrame(Mat input) {
+        int CELL_SAMPLES = 9;
         Mat output = input.clone();
         Point frameCenter = new Point(output.cols() / 2, output.rows() / 2);
         int cubeRadius = 300;
 
-        PointColorPair[] cells = new PointColorPair[128];
+        PointColorPair[] cells = new PointColorPair[CELL_SAMPLES];
         int counter = 0;
         Mat copy = input.clone();
         Imgproc.cvtColor(copy, copy, Imgproc.COLOR_RGBA2BGR);
@@ -181,7 +190,7 @@ public class MainActivity extends CameraActivity {
         for(int i = 0; i < 7; i++) {
             LinkedList<Point> points = getColorLocations(i, copy.clone(), frameCenter, cubeRadius);
             for(Point point : points) {
-                if(counter > 127) break;
+                if(counter > CELL_SAMPLES - 1) break;
                 cells[counter] = new PointColorPair(point, i);
                 counter++;
             }
@@ -202,12 +211,31 @@ public class MainActivity extends CameraActivity {
             Scalar color = new Scalar(0, 255, 0);
             if(cell == centerCell) color = new Scalar(255, 0, 0);
             Imgproc.circle(output, cell.getPoint(), 80, color, 5);
-            Imgproc.putText(output, indexToColor(cell.getColor()), cell.point, Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0, 255, 0), 3);
+        }
+
+        if(captureFrame) {
+            captureFrame = false;
+            attemptCaptureSend(cells);
         }
 
         Imgproc.circle(output, frameCenter, 10, new Scalar(255, 255, 255), 3);
         Imgproc.circle(output, frameCenter, cubeRadius, new Scalar(255, 255, 255), 3);
         return output;
+    }
+    public void attemptCaptureSend(PointColorPair[] cells) {
+        for(PointColorPair cell : cells) {
+            if(cell == null) return;
+        }
+        PointColorPair[] sortedCells = getSortedCells(cells);
+        String outputStr = arrayToString(sortedCells);
+        writeUSB(outputStr);
+    }
+    public String arrayToString(PointColorPair[] cells) {
+        String result = "";
+        for(PointColorPair cell : cells) {
+            result += indexToColor(cell.getColor());
+        }
+        return result;
     }
     public LinkedList<Point> getColorLocations(int colorIndex, Mat input, Point center, int threshold) {
         // Highlight selected color
@@ -241,6 +269,14 @@ public class MainActivity extends CameraActivity {
             this.color = color;
         }
 
+        public double getX() {
+            return point.x;
+        }
+
+        public double getY() {
+            return point.y;
+        }
+
         public Point getPoint() {
             return point;
         }
@@ -269,7 +305,35 @@ public class MainActivity extends CameraActivity {
         }
         return result;
     }
+    public PointColorPair[] getSortedCells(PointColorPair[] cells) {
+        PointColorPair[] sorted = cells.clone();
 
+        sortCells(0, 9, 0, sorted);
+        for(int i = 0; i < 3; i++) {
+            sortCells(i * 3, (i + 1) * 3, 1, sorted);
+        }
+
+        return sorted;
+    }
+    public void sortCells(int start, int end, int axis, PointColorPair[] cells) {
+        for (int i = start; i < end; i++) {
+            for (int j = i; j < end; j++) {
+                if(axis == 0) {
+                    if(cells[j].getX() < cells[i].getX()) {
+                        PointColorPair temp = cells[i];
+                        cells[i] = cells[j];
+                        cells[j] = temp;
+                    }
+                } else if(axis == 1) {
+                    if(cells[j].getY() > cells[i].getY()) {
+                        PointColorPair temp = cells[i];
+                        cells[i] = cells[j];
+                        cells[j] = temp;
+                    }
+                }
+            }
+        }
+    }
 
     @Override
     protected List<? extends CameraBridgeViewBase> getCameraViewList() {
@@ -289,4 +353,11 @@ public class MainActivity extends CameraActivity {
     }
 
 
+    public String byteArrayToStringList(byte[] array) {
+        String result = "";
+        for(byte b : array) {
+            result += b + ", ";
+        }
+        return result;
+    }
 }
