@@ -51,8 +51,8 @@ public class MainActivity extends CameraActivity {
     Toast debugMarker;
     private final Scalar[][] colorRanges = {
             {new Scalar(96.0, 180.0, 110.0), new Scalar(130.0, 256.0, 256.0)}, //blue
-            {new Scalar(5.0, 120.0, 165.0),  new Scalar(17.0, 256.0, 256.0)}, //orange
-            {new Scalar(21.0, 55.0, 117.0),  new Scalar(40.0, 256.0, 256.0)}, //yellow
+            {new Scalar(10.0, 120.0, 165.0),  new Scalar(20, 256.0, 256.0)}, //orange
+            {new Scalar(21, 55.0, 117.0),  new Scalar(40.0, 256.0, 256.0)}, //yellow
             {new Scalar(45.0, 80.0, 80.0),  new Scalar(80.0, 256.0, 256.0)}, //green
             {new Scalar(165.0, 114.0, 0.0),  new Scalar(179.0, 256.0, 256.0)}, //red
             {new Scalar(0.0, 0.0, 150.0),    new Scalar(255.0, 120.0, 256.0)}, //white
@@ -108,6 +108,7 @@ public class MainActivity extends CameraActivity {
             @Override
             public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
                 return handleFrame(inputFrame.rgba());
+                //return inputFrame.rgba();
             }
         });
         try {
@@ -209,35 +210,43 @@ public class MainActivity extends CameraActivity {
         Point frameCenter = new Point(output.cols() / 2, output.rows() / 2);
         int cubeRadius = 300;
 
-        PointColorPair[] cells = new PointColorPair[CELL_SAMPLES];
-        int counter = 0;
-        Mat copy = input.clone();
+        Rect cubeFrame = new Rect((int)(frameCenter.x - cubeRadius), (int)(frameCenter.y - cubeRadius), 2 * cubeRadius, 2 * cubeRadius);
+        Mat copy = new Mat(input, cubeFrame);
+
+        // RGBA to HSV
         Imgproc.cvtColor(copy, copy, Imgproc.COLOR_RGBA2BGR);
         Imgproc.cvtColor(copy, copy, Imgproc.COLOR_BGR2HSV);
+
+        PointColorPair[] cells = new PointColorPair[CELL_SAMPLES];
+        int counter = 0;
+
+        // For each color
         for(int i = 0; i < 7; i++) {
-            LinkedList<Point> points = getColorLocations(i, copy.clone(), frameCenter, cubeRadius);
+            LinkedList<Point> points = getColorLocations(i, copy.clone(), new Point(cubeRadius, cubeRadius), cubeRadius);
             for(Point point : points) {
                 if(counter > CELL_SAMPLES - 1) break;
+
+                point.x = point.x + frameCenter.x - cubeRadius;
+                point.y = point.y + frameCenter.y - cubeRadius;
+
+                boolean dupe = false;
+                for(PointColorPair cell : cells) {
+                    if(cell == null) break;
+                    if(Math.hypot(Math.abs(point.x - cell.getPoint().x), Math.abs(point.y - cell.getPoint().y)) < 50) {
+                        dupe = true;
+                        break;
+                    }
+                }
+                if(dupe) continue;
+
                 cells[counter] = new PointColorPair(point, i);
                 counter++;
             }
         }
 
-        PointColorPair centerCell = null;
-        double closest = Double.POSITIVE_INFINITY;
         for(PointColorPair cell : cells) {
             if(cell == null) break;
-            double dist = Math.hypot(Math.abs(frameCenter.x - cell.getPoint().x), Math.abs(frameCenter.y - cell.getPoint().y));
-            if(dist < closest) {
-                closest = dist;
-                centerCell = cell;
-            }
-        }
-        for(PointColorPair cell : cells) {
-            if(cell == null) break;
-            Scalar color = new Scalar(0, 255, 0);
-            if(cell == centerCell) color = new Scalar(255, 0, 0);
-            Imgproc.circle(output, cell.getPoint(), 80, color, 5);
+            Imgproc.circle(output, cell.getPoint(), 80, indexToRGB(cell.color), -1);
         }
 
         if(captureFrame) {
@@ -245,8 +254,7 @@ public class MainActivity extends CameraActivity {
             attemptCaptureSend(cells);
         }
 
-        Imgproc.circle(output, frameCenter, 10, new Scalar(255, 255, 255), 3);
-        Imgproc.circle(output, frameCenter, cubeRadius, new Scalar(255, 255, 255), 3);
+        Imgproc.rectangle(output, cubeFrame, new Scalar(255, 255, 255), 3);
         return output;
     }
     public void attemptCaptureSend(PointColorPair[] cells) {
@@ -255,7 +263,7 @@ public class MainActivity extends CameraActivity {
         }
         PointColorPair[] sortedCells = getSortedCells(cells);
         String outputStr = arrayToString(sortedCells);
-        lastSend.setText(byteArrayToStringList(outputStr.getBytes()) + " | " + outputStr);
+        lastSend.setText(outputStr);
         writeUSB(outputStr);
     }
     public String arrayToString(PointColorPair[] cells) {
@@ -333,6 +341,26 @@ public class MainActivity extends CameraActivity {
         }
         return result;
     }
+    public Scalar indexToRGB(int index) {
+        Scalar result = new Scalar(0, 0, 0);
+        switch(index) {
+            case 0: result = new Scalar(0, 0, 255);
+                break;
+            case 1: result = new Scalar(255, 144, 0);
+                break;
+            case 2: result = new Scalar(255, 230, 0);
+                break;
+            case 3: result = new Scalar(0, 255, 0);
+                break;
+            case 4: result = new Scalar(255, 0, 0);
+                break;
+            case 5: result = new Scalar(255, 255, 255);
+                break;
+            case 6: result = new Scalar(255, 0, 0);
+                break;
+        }
+        return result;
+    }
     public PointColorPair[] getSortedCells(PointColorPair[] cells) {
         PointColorPair[] sorted = cells.clone();
 
@@ -347,7 +375,7 @@ public class MainActivity extends CameraActivity {
         for (int i = start; i < end; i++) {
             for (int j = i; j < end; j++) {
                 if(axis == 0) {
-                    if(cells[j].getX() < cells[i].getX()) {
+                    if(cells[j].getX() > cells[i].getX()) {
                         PointColorPair temp = cells[i];
                         cells[i] = cells[j];
                         cells[j] = temp;
