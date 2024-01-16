@@ -41,7 +41,7 @@
       "moduleBuildFile": "C:\\Users\\matte\\AndroidStudioProjects\\livefeed\\OpenCV\\build.gradle",
       "makeFile": "C:\\Users\\matte\\AndroidStudioProjects\\livefeed\\OpenCV\\libcxx_helper\\CMakeLists.txt",
       "buildSystem": "CMAKE",
-      "ndkFolder": "C:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393",
+      "ndkFolder": "C:\\Users\\matte\\AppData\\Local\\Android\\sdk\\ndk\\25.1.8937393",
       "ndkVersion": "25.1.8937393",
       "ndkSupportedAbiList": [
         "ARMEABI_V7A",
@@ -107,16 +107,16 @@
           "default": true
         }
       ],
-      "cmakeToolchainFile": "C:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\build\\cmake\\android.toolchain.cmake",
+      "cmakeToolchainFile": "C:\\Users\\matte\\AppData\\Local\\Android\\sdk\\ndk\\25.1.8937393\\build\\cmake\\android.toolchain.cmake",
       "cmake": {
-        "cmakeExe": "C:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\cmake.exe"
+        "cmakeExe": "C:\\Users\\matte\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\cmake.exe"
       },
       "stlSharedObjectMap": {
         "LIBCXX_SHARED": {
-          "ARMEABI_V7A": "C:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\arm-linux-androideabi\\libc++_shared.so",
-          "ARM64_V8A": "C:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\aarch64-linux-android\\libc++_shared.so",
-          "X86": "C:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\i686-linux-android\\libc++_shared.so",
-          "X86_64": "C:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\x86_64-linux-android\\libc++_shared.so"
+          "ARMEABI_V7A": "C:\\Users\\matte\\AppData\\Local\\Android\\sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\arm-linux-androideabi\\libc++_shared.so",
+          "ARM64_V8A": "C:\\Users\\matte\\AppData\\Local\\Android\\sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\aarch64-linux-android\\libc++_shared.so",
+          "X86": "C:\\Users\\matte\\AppData\\Local\\Android\\sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\i686-linux-android\\libc++_shared.so",
+          "X86_64": "C:\\Users\\matte\\AppData\\Local\\Android\\sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\x86_64-linux-android\\libc++_shared.so"
         },
         "LIBCXX_STATIC": {},
         "NONE": {},
@@ -124,14 +124,14 @@
       },
       "project": {
         "rootBuildGradleFolder": "C:\\Users\\matte\\AndroidStudioProjects\\livefeed",
-        "sdkFolder": "C:\\Users\\matte\\AppData\\Local\\Android\\Sdk",
+        "sdkFolder": "C:\\Users\\matte\\AppData\\Local\\Android\\sdk",
         "isBuildOnlyTargetAbiEnabled": true,
-        "ideBuildTargetAbi": "x86_64,x86",
+        "ideBuildTargetAbi": "x86_64,arm64-v8a",
         "isCmakeBuildCohabitationEnabled": false,
         "isPrefabEnabled": false
       },
       "outputOptions": [],
-      "ninjaExe": "C:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "ninjaExe": "C:\\Users\\matte\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
       "hasBuildTimeInformation": true
     },
     "prefabClassPaths": [],
@@ -155,10 +155,10 @@
     "-DANDROID_PLATFORM\u003dandroid-26",
     "-DANDROID_ABI\u003dx86_64",
     "-DCMAKE_ANDROID_ARCH_ABI\u003dx86_64",
-    "-DANDROID_NDK\u003dC:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393",
-    "-DCMAKE_ANDROID_NDK\u003dC:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393",
-    "-DCMAKE_TOOLCHAIN_FILE\u003dC:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\build\\cmake\\android.toolchain.cmake",
-    "-DCMAKE_MAKE_PROGRAM\u003dC:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-DANDROID_NDK\u003dC:\\Users\\matte\\AppData\\Local\\Android\\sdk\\ndk\\25.1.8937393",
+    "-DCMAKE_ANDROID_NDK\u003dC:\\Users\\matte\\AppData\\Local\\Android\\sdk\\ndk\\25.1.8937393",
+    "-DCMAKE_TOOLCHAIN_FILE\u003dC:\\Users\\matte\\AppData\\Local\\Android\\sdk\\ndk\\25.1.8937393\\build\\cmake\\android.toolchain.cmake",
+    "-DCMAKE_MAKE_PROGRAM\u003dC:\\Users\\matte\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
     "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003dC:\\Users\\matte\\AndroidStudioProjects\\livefeed\\OpenCV\\build\\intermediates\\cxx\\Debug\\r695a12t\\obj\\x86_64",
     "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003dC:\\Users\\matte\\AndroidStudioProjects\\livefeed\\OpenCV\\build\\intermediates\\cxx\\Debug\\r695a12t\\obj\\x86_64",
     "-DCMAKE_BUILD_TYPE\u003dDebug",
@@ -166,6 +166,6 @@
     "-GNinja",
     "-DANDROID_STL\u003dc++_shared"
   ],
-  "stlLibraryFile": "C:\\Users\\matte\\AppData\\Local\\Android\\Sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\x86_64-linux-android\\libc++_shared.so",
+  "stlLibraryFile": "C:\\Users\\matte\\AppData\\Local\\Android\\sdk\\ndk\\25.1.8937393\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\lib\\x86_64-linux-android\\libc++_shared.so",
   "intermediatesParentFolder": "C:\\Users\\matte\\AndroidStudioProjects\\livefeed\\OpenCV\\build\\intermediates\\cxx\\Debug\\r695a12t"
 }

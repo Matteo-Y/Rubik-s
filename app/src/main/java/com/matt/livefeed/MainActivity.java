@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
 import android.hardware.usb.UsbDevice;
@@ -17,6 +18,7 @@ import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -99,6 +101,31 @@ public class MainActivity extends CameraActivity {
         captureButton.setOnClickListener((v) -> captureFrame = true);
         disconnectButton.setOnClickListener((v) -> disconnectUSB());
 
+        connectButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) connectButton.setBackgroundColor(Color.rgb(220, 220, 220));
+                else if(event.getAction() == MotionEvent.ACTION_UP) connectButton.setBackgroundColor(Color.rgb(255, 255, 255));
+                return false;
+            }
+        });
+        captureButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) captureButton.setBackgroundColor(Color.rgb(220, 220, 220));
+                else if(event.getAction() == MotionEvent.ACTION_UP) captureButton.setBackgroundColor(Color.rgb(255, 255, 255));
+                return false;
+            }
+        });
+        disconnectButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN) disconnectButton.setBackgroundColor(Color.rgb(220, 220, 220));
+                else if(event.getAction() == MotionEvent.ACTION_UP) disconnectButton.setBackgroundColor(Color.rgb(255, 255, 255));
+                return false;
+            }
+        });
+
         cameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2() {
             @Override
             public void onCameraViewStarted(int width, int height) {}
@@ -130,8 +157,7 @@ public class MainActivity extends CameraActivity {
         });
 
 
-        Toast successfulOpen = Toast.makeText(this, "serial succeeded", Toast.LENGTH_SHORT);
-        Toast failedOpen = Toast.makeText(this, "serial failed", Toast.LENGTH_SHORT);
+        Toast successfulOpen = Toast.makeText(this, "Connected", Toast.LENGTH_SHORT);
         BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -150,8 +176,6 @@ public class MainActivity extends CameraActivity {
                                 usbSerial.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
                                 successfulOpen.show();
                             }
-                        } else {
-                            failedOpen.show();
                         }
                     } else {
                     }
@@ -184,11 +208,10 @@ public class MainActivity extends CameraActivity {
                 PendingIntent intent;
                 intent = PendingIntent.getBroadcast(this, USB_CODE, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT | PendingIntent.FLAG_MUTABLE);
                 usbManager.requestPermission(usbDevice, intent);
-                Toast.makeText(this, "connection found", Toast.LENGTH_SHORT).show();
             } else {
                     usbConnection = null;
                     usbDevice = null;
-                    Toast.makeText(this, "connection not found", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Arduino not found", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -205,14 +228,16 @@ public class MainActivity extends CameraActivity {
 
 
     public Mat handleFrame(Mat input) {
+        Log.d("MAT", "handle frame called");
         int CELL_SAMPLES = 9;
         Mat output = input.clone();
+        Log.d("MAT", "input clone made");
         Point frameCenter = new Point(output.cols() / 2, output.rows() / 2);
-        int cubeRadius = 300;
+        int cubeRadius = (int)(output.cols() / 4);
 
         Rect cubeFrame = new Rect((int)(frameCenter.x - cubeRadius), (int)(frameCenter.y - cubeRadius), 2 * cubeRadius, 2 * cubeRadius);
         Mat copy = new Mat(input, cubeFrame);
-
+        Log.d("MAT", "copy mat made");
         // RGBA to HSV
         Imgproc.cvtColor(copy, copy, Imgproc.COLOR_RGBA2BGR);
         Imgproc.cvtColor(copy, copy, Imgproc.COLOR_BGR2HSV);
