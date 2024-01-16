@@ -15,7 +15,6 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -38,7 +37,6 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -50,7 +48,7 @@ import java.util.Map;
 
 public class MainActivity extends CameraActivity {
     final int CAMERA_PERM_CODE = 100, USB_CODE = 101;
-    Toast debugMarker;
+    Toast debugMarker, notification;
     private final Scalar[][] colorRanges = {
             {new Scalar(96.0, 180.0, 110.0), new Scalar(130.0, 256.0, 256.0)}, //blue
             {new Scalar(10.0, 120.0, 165.0),  new Scalar(20, 256.0, 256.0)}, //orange
@@ -78,6 +76,8 @@ public class MainActivity extends CameraActivity {
     UsbSerialDevice usbSerial = null;
     UsbDeviceConnection usbConnection = null;
 
+    Context context = this;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +86,7 @@ public class MainActivity extends CameraActivity {
         getPermission();
 
         debugMarker = Toast.makeText(this, "REACHED", Toast.LENGTH_SHORT);
+        notification = Toast.makeText(this, "Notification", Toast.LENGTH_SHORT);
 
         cameraView = findViewById(R.id.cameraView);
         flashlight = findViewById(R.id.flashlight);
@@ -177,7 +178,6 @@ public class MainActivity extends CameraActivity {
                                 successfulOpen.show();
                             }
                         }
-                    } else {
                     }
                 } else if(intent.getAction() != null && intent.getAction() == UsbManager.ACTION_USB_DEVICE_DETACHED) {
                     disconnectUSB();
@@ -215,9 +215,12 @@ public class MainActivity extends CameraActivity {
             }
         }
     }
-    public void writeUSB(String data) {
-        if(usbDevice == null) return;
+    public boolean writeUSB(String data) {
+        if(usbDevice == null) return false;
         usbSerial.write(data.getBytes());
+        notification.setText("Sent!");
+        notification.show();
+        return true;
     }
     public void disconnectUSB() {
         if(usbSerial != null) usbSerial.close();
@@ -288,8 +291,8 @@ public class MainActivity extends CameraActivity {
         }
         PointColorPair[] sortedCells = getSortedCells(cells);
         String outputStr = arrayToString(sortedCells);
-        lastSend.setText(outputStr);
-        writeUSB(outputStr);
+
+        if(writeUSB(outputStr)) lastSend.setText(outputStr);
     }
     public String arrayToString(PointColorPair[] cells) {
         String result = "";
