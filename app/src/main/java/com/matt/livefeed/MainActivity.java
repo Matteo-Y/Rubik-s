@@ -3,6 +3,7 @@ package com.matt.livefeed;
 import androidx.annotation.NonNull;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -77,8 +78,7 @@ public class MainActivity extends CameraActivity {
     UsbSerialDevice usbSerial = null;
     UsbDeviceConnection usbConnection = null;
 
-    Context context = this;
-
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,29 +103,20 @@ public class MainActivity extends CameraActivity {
         captureButton.setOnClickListener((v) -> captureFrame = true);
         disconnectButton.setOnClickListener((v) -> disconnectUSB());
 
-        connectButton.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) connectButton.setBackgroundColor(Color.rgb(220, 220, 220));
-                else if(event.getAction() == MotionEvent.ACTION_UP) connectButton.setBackgroundColor(Color.rgb(255, 255, 255));
-                return false;
-            }
+        connectButton.setOnTouchListener((v, event) -> {
+            if(event.getAction() == MotionEvent.ACTION_DOWN) connectButton.setBackgroundColor(Color.rgb(220, 220, 220));
+            else if(event.getAction() == MotionEvent.ACTION_UP) connectButton.setBackgroundColor(Color.rgb(255, 255, 255));
+            return false;
         });
-        captureButton.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) captureButton.setBackgroundColor(Color.rgb(220, 220, 220));
-                else if(event.getAction() == MotionEvent.ACTION_UP) captureButton.setBackgroundColor(Color.rgb(255, 255, 255));
-                return false;
-            }
+        captureButton.setOnTouchListener((v, event) -> {
+            if(event.getAction() == MotionEvent.ACTION_DOWN) captureButton.setBackgroundColor(Color.rgb(220, 220, 220));
+            else if(event.getAction() == MotionEvent.ACTION_UP) captureButton.setBackgroundColor(Color.rgb(255, 255, 255));
+            return false;
         });
-        disconnectButton.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if(event.getAction() == MotionEvent.ACTION_DOWN) disconnectButton.setBackgroundColor(Color.rgb(220, 220, 220));
-                else if(event.getAction() == MotionEvent.ACTION_UP) disconnectButton.setBackgroundColor(Color.rgb(255, 255, 255));
-                return false;
-            }
+        disconnectButton.setOnTouchListener((v, event) -> {
+            if(event.getAction() == MotionEvent.ACTION_DOWN) disconnectButton.setBackgroundColor(Color.rgb(220, 220, 220));
+            else if(event.getAction() == MotionEvent.ACTION_UP) disconnectButton.setBackgroundColor(Color.rgb(255, 255, 255));
+            return false;
         });
 
         cameraView.setCvCameraViewListener(new CameraBridgeViewBase.CvCameraViewListener2() {
@@ -145,16 +136,12 @@ public class MainActivity extends CameraActivity {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        Toast flashOn = Toast.makeText(this, "on", Toast.LENGTH_SHORT);
-        Toast flashOff = Toast.makeText(this, "off", Toast.LENGTH_SHORT);
-        flashlight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (flashlight.isChecked()) {
-                    cameraView.turnOnTheFlash();
-                } else {
-                    cameraView.turnOffTheFlash();
-                }
+
+        flashlight.setOnClickListener(v -> {
+            if (flashlight.isChecked()) {
+                cameraView.turnOnTheFlash();
+            } else {
+                cameraView.turnOffTheFlash();
             }
         });
 
