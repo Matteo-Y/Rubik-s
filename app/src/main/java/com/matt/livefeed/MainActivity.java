@@ -242,7 +242,7 @@ public class MainActivity extends CameraActivity {
 
         // For each color
         for(int i = 0; i < 7; i++) {
-            LinkedList<Point> points = getColorLocations2(i, copy.clone(), new Point(cubeRadius, cubeRadius), cubeRadius);
+            LinkedList<Point> points = getColorLocations(i, copy.clone(), new Point(cubeRadius, cubeRadius), cubeRadius);
             for(Point point : points) {
                 if(counter > CELL_SAMPLES - 1) break;
 
@@ -294,30 +294,6 @@ public class MainActivity extends CameraActivity {
         return result;
     }
     public LinkedList<Point> getColorLocations(int colorIndex, Mat input, Point center, int threshold) {
-        // Highlight selected color
-        Core.inRange(input, colorRanges[colorIndex][0], colorRanges[colorIndex][1], input);
-
-        Mat binary = new Mat();
-        Imgproc.threshold(input, binary, 0, 100, Imgproc.THRESH_BINARY_INV);
-        List<MatOfPoint> contours = new ArrayList<>();
-        Mat hierarchey = new Mat();
-        Imgproc.findContours(binary, contours, hierarchey, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
-        LinkedList<Point> points = new LinkedList<Point>();
-        for(int i = 0; i < contours.size(); i++) {
-            if(Imgproc.contourArea(contours.get(i)) < 1000) continue;
-            Rect rect = Imgproc.boundingRect(contours.get(i));
-            if(rect.height < 100 || rect.width < 100) continue; // Too small
-            if(rect.height > 250 || rect.width > 250) continue; // Too big
-            if(Math.abs(rect.height - rect.width) > 100) continue; // Too non-square
-            int x = rect.x + rect.width / 2;
-            int y = rect.y + rect.height / 2;
-            double dist = Math.hypot(Math.abs(center.x - x), Math.abs(center.y - y));
-            if(dist > threshold) continue;
-            points.add(new Point(x, y));
-        }
-        return points;
-    }
-    public LinkedList<Point> getColorLocations2(int colorIndex, Mat input, Point center, int threshold) {
         LinkedList<Point> points = new LinkedList<Point>();
         Core.inRange(input, colorRanges[colorIndex][0], colorRanges[colorIndex][1], input);
         for(Rect cellRect : cellRects) {
