@@ -52,13 +52,13 @@ public class MainActivity extends CameraActivity {
     final int CAMERA_PERM_CODE = 100, USB_CODE = 101;
     Toast debugMarker, notification;
     private final Scalar[][] colorRanges = {
-            {new Scalar(96.0, 180.0, 110.0), new Scalar(130.0, 256.0, 256.0)}, //blue
-            {new Scalar(10.0, 120.0, 165.0),  new Scalar(20, 256.0, 256.0)}, //orange
-            {new Scalar(21, 55.0, 117.0),  new Scalar(40.0, 256.0, 256.0)}, //yellow
-            {new Scalar(45.0, 80.0, 80.0),  new Scalar(80.0, 256.0, 256.0)}, //green
-            {new Scalar(165.0, 114.0, 0.0),  new Scalar(179.0, 256.0, 256.0)}, //red
+            {new Scalar(85.0, 180.0, 110.0), new Scalar(130.0, 256.0, 256.0)}, //blue
+            {new Scalar(10.0, 120.0, 165.0),  new Scalar(23.0, 256.0, 256.0)}, //orange
+            {new Scalar(21.0, 55.0, 117.0),  new Scalar(40.0, 256.0, 256.0)}, //yellow
+            {new Scalar(35.0, 80.0, 80.0),  new Scalar(80.0, 256.0, 256.0)}, //green
+            {new Scalar(155.0, 100.0, 0.0),  new Scalar(179.0, 256.0, 256.0)}, //red
             {new Scalar(0.0, 0.0, 150.0),    new Scalar(255.0, 120.0, 256.0)}, //white
-            {new Scalar(0.0, 100.0, 136.0),  new Scalar(4.0, 256.0, 256.0)} //red IIe
+            {new Scalar(0.0, 100.0, 136.0),  new Scalar(8.0, 256.0, 256.0)} //red IIe
     };
     
     JavaCameraView cameraView;
@@ -192,15 +192,11 @@ public class MainActivity extends CameraActivity {
         }
         for(Map.Entry<String, UsbDevice> entry: usbDevices.entrySet()) {
             usbDevice = entry.getValue();
-            if(usbDevice.getVendorId() == 9025) {
-                PendingIntent intent;
-                intent = PendingIntent.getBroadcast(this, USB_CODE, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT | PendingIntent.FLAG_MUTABLE);
-                usbManager.requestPermission(usbDevice, intent);
-            } else {
-                    usbConnection = null;
-                    usbDevice = null;
-                    Toast.makeText(this, "Arduino not found", Toast.LENGTH_SHORT).show();
-            }
+            debugMarker.setText("Attempting connection to: " + usbDevice.getVendorId());
+            debugMarker.show();
+            PendingIntent intent;
+            intent = PendingIntent.getBroadcast(this, USB_CODE, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT | PendingIntent.FLAG_MUTABLE);
+            usbManager.requestPermission(usbDevice, intent);
         }
     }
     public boolean writeUSB(String data) {
@@ -218,17 +214,25 @@ public class MainActivity extends CameraActivity {
     }
 
 
+    int CELL_SAMPLES = 9;
+    Point frameCenter;
+    int cubeRadius, cubeWidth, cellWidth;
+    Rect cubeFrame;
+    Rect cellRects[] = new Rect[9];
     public Mat handleFrame(Mat input) {
-        Log.d("MAT", "handle frame called");
-        int CELL_SAMPLES = 9;
         Mat output = input.clone();
-        Log.d("MAT", "input clone made");
-        Point frameCenter = new Point(output.cols() / 2, output.rows() / 2);
-        int cubeRadius = (int)(output.cols() / 4);
+        frameCenter = new Point(output.cols() / 2, output.rows() / 2);
+        cubeWidth = (int)(output.cols() / 2);
+        cubeRadius = cubeWidth / 2;
+        cellWidth = cubeWidth / 3;
 
-        Rect cubeFrame = new Rect((int)(frameCenter.x - cubeRadius), (int)(frameCenter.y - cubeRadius), 2 * cubeRadius, 2 * cubeRadius);
+        cubeFrame = new Rect((int)(frameCenter.x - cubeRadius), (int)(frameCenter.y - cubeRadius), 2 * cubeRadius, 2 * cubeRadius);
+        cellRects[0] = new Rect(0 ,0, cellWidth, cellWidth); cellRects[1] = new Rect(cellWidth ,0, cellWidth, cellWidth); cellRects[2] = new Rect(2 * cellWidth ,0, cellWidth, cellWidth);
+        cellRects[3] = new Rect(0 ,cellWidth, cellWidth, cellWidth); cellRects[4] = new Rect(cellWidth ,cellWidth, cellWidth, cellWidth); cellRects[5] = new Rect(2 * cellWidth ,cellWidth, cellWidth, cellWidth);
+        cellRects[6] = new Rect(0 ,2 * cellWidth, cellWidth, cellWidth); cellRects[7] = new Rect(cellWidth ,2 * cellWidth, cellWidth, cellWidth); cellRects[8] = new Rect(2 * cellWidth ,2 * cellWidth, cellWidth, cellWidth);
+
         Mat copy = new Mat(input, cubeFrame);
-        Log.d("MAT", "copy mat made");
+
         // RGBA to HSV
         Imgproc.cvtColor(copy, copy, Imgproc.COLOR_RGBA2BGR);
         Imgproc.cvtColor(copy, copy, Imgproc.COLOR_BGR2HSV);
@@ -238,7 +242,7 @@ public class MainActivity extends CameraActivity {
 
         // For each color
         for(int i = 0; i < 7; i++) {
-            LinkedList<Point> points = getColorLocations(i, copy.clone(), new Point(cubeRadius, cubeRadius), cubeRadius);
+            LinkedList<Point> points = getColorLocations2(i, copy.clone(), new Point(cubeRadius, cubeRadius), cubeRadius);
             for(Point point : points) {
                 if(counter > CELL_SAMPLES - 1) break;
 
@@ -313,6 +317,17 @@ public class MainActivity extends CameraActivity {
         }
         return points;
     }
+    public LinkedList<Point> getColorLocations2(int colorIndex, Mat input, Point center, int threshold) {
+        LinkedList<Point> points = new LinkedList<Point>();
+        Core.inRange(input, colorRanges[colorIndex][0], colorRanges[colorIndex][1], input);
+        for(Rect cellRect : cellRects) {
+            Mat cell = new Mat(input, cellRect);
+            Scalar mean = Core.mean(cell);
+            if(mean.val[0] > 150) points.add(new Point(cellRect.x + cellWidth / 2, cellRect.y + cellWidth / 2));
+        }
+        return points;
+    }
+
     class PointColorPair {
         protected Point point;
         protected int color;
