@@ -16,8 +16,10 @@ void getBit(int currentFace) {
   while(sticker < 9) {
     if(Serial.available() > 0)  {
       char Incoming_value = Serial.read(); 
-      Serial.print(Incoming_value);
-      Serial.print("\n");
+      if(!phoneMode) {
+        Serial.print(Incoming_value);
+        Serial.print("\n");
+      }
       int color = 0;
       switch(Incoming_value) {
         case 'G':

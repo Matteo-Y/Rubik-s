@@ -26,101 +26,124 @@ class Cubo {
     void Rubik_rotate(char rot, bool motorsMove) {
       static char storeMove;
       bool MotorRotate = motorsMove;
-
+      bool printChars = !phoneMode;
+      
       switch(rot) {
-        case 'f':  
+        case ':':
+          RotateFrontCCW();  
           RotateFrontCCW();  
           if(MotorRotate == true){
-            ServosCube_Movex();
-            ServosFace_BackCCW();
             ServosCube_MoveX();
+            ServosFace_BackCW();
+            ServosFace_BackCW();
+            ServosCube_Movex();
           } 
-          Serial.print(F("F'"));
+          if(printChars) Serial.print(F("F2"));
           break;
-        case 'F':  
+        case 'f':  ////////////////
+          RotateFrontCCW();  
+          if(MotorRotate == true){
+            ServosCube_MoveX();
+            ServosFace_BackCW();
+            ServosCube_Movex();
+          } 
+          if(printChars) Serial.print(F("F'"));
+          break;
+        case 'F':  ////////////////
           RotateFrontCW();
           if(MotorRotate == true){
-            ServosCube_Movex();
-            ServosFace_BackCW();
-            ServosCube_MoveX(); 
+            ServosCube_MoveX();
+            ServosFace_BackCCW();
+            ServosCube_Movex(); 
           }   
-          Serial.print(F("F")); 
+          if(printChars)Serial.print(F("F")); 
           break;
-        case 'r':  
+        case 'r':  ///////////////////////////
           RotateRightCCW();
           if(MotorRotate == true){ 
-            ServosFace_RightCCW();  
-          }  
-          Serial.print(F("R'"));
-          break;
-        case 'R':  
-          RotateRightCW(); 
-          if(MotorRotate == true){
             ServosFace_RightCW();  
           }  
-          Serial.print(F("R"));  
+          if(printChars)Serial.print(F("R'"));
           break;
-        case 'u':  
+        case 'R':  //////////////////////////
+          RotateRightCW(); 
+          if(MotorRotate == true){
+            ServosFace_RightCCW();  
+          }  
+          if(printChars)Serial.print(F("R"));  
+          break;
+        case 'u':  ////////////////
           RotateUpCCW();
           if(MotorRotate == true){     
-            ServosFace_FrontCW();
+            ServosFace_BackCW();
           }
-          Serial.print(F("U'"));
+          if(printChars)Serial.print(F("U'"));
           break;
-        case 'U': 
+        case 'U': /////////////
           RotateUpCW(); 
           if(MotorRotate == true){     
-            ServosFace_FrontCCW(); 
+            ServosFace_BackCCW(); 
           }   
-          Serial.print(F("U")); 
+          if(printChars)Serial.print(F("U")); 
           break;
-        case 'l':  
+        case 'l':  ///////////////
           RotateLeftCCW(); 
           if(MotorRotate == true){ 
             ServosFace_LeftCW();  
           }   
-          Serial.print(F("L'"));
+          if(printChars)Serial.print(F("L'"));
           break;
-        case 'L':  
+        case 'L':  //////////////
           RotateLeftCW();
           if(MotorRotate == true){
             ServosFace_LeftCCW();     
           }   
-          Serial.print(F("L"));
+          if(printChars)Serial.print(F("L"));
           break;
         case 'd':  
           RotateDownCCW(); 
           if(MotorRotate == true){
-            ServosFace_BackCCW();  
+            ServosFace_FrontCCW();  
           }  
-          Serial.print(F("D'")); 
+          if(printChars)Serial.print(F("D'")); 
           break;
         case 'D':  
           RotateDownCW(); 
           if(MotorRotate == true){ 
-            ServosFace_BackCW();    
+            ServosFace_FrontCW();    
           }  
-          Serial.print(F("D"));
+          if(printChars)Serial.print(F("D"));
           break;
-        case 'b':  
+        case ';': 
+          RotateBackCCW();  
           RotateBackCCW();  
           if(MotorRotate == true){
-            ServosCube_Movex();
-            ServosFace_FrontCW();
             ServosCube_MoveX();
+            ServosFace_FrontCCW();
+            ServosFace_FrontCCW();
+            ServosCube_Movex();
           }  
-          Serial.print(F("B'")); 
+          if(printChars)Serial.print(F("B2")); 
           break;
-        case 'B':  
+        case 'b':  ////////////
+          RotateBackCCW();  
+          if(MotorRotate == true){
+            ServosCube_MoveX();
+            ServosFace_FrontCCW();
+            ServosCube_Movex();
+          }  
+          if(printChars)Serial.print(F("B'")); 
+          break;
+        case 'B':  //////////////
           RotateBackCW();  
           if(MotorRotate == true){  
-            ServosCube_Movex();
-            ServosFace_FrontCCW();
             ServosCube_MoveX();
+            ServosFace_FrontCW();
+            ServosCube_Movex();
           }   
-          Serial.print(F("B")); 
+          if(printChars)Serial.print(F("B")); 
           break;
-        case 'Y':  
+        case 'Y':  /////////////////////
           RotateY();
           if(MotorRotate == true){  
             ServosCube_MoveZ();
@@ -128,10 +151,11 @@ class Cubo {
           if((HTM > 0) && (QTM > 0)) {
             HTM--;  QTM--;
           }  
+          if(printChars)Serial.print(F("Y")); 
           break;
       }
       if(MotorRotate == true){  
-        Print();
+        //Print();
       }
   }
 
@@ -162,62 +186,46 @@ class Cubo {
       while(flag == true) {
         flag = false;
         for(int i = 0; i < resolutionStr.length(); i++) {
-          switch(caze) {
-            case 0:
-              if(resolutionStr[i] == 'r' && resolutionStr[i + 1] == 'R' || resolutionStr[i] == 'R' && resolutionStr[i + 1] == 'r' ||
-                resolutionStr[i] == 'l' && resolutionStr[i + 1] == 'L'  || resolutionStr[i] == 'L' && resolutionStr[i + 1] == 'l' ||
-                resolutionStr[i] == 'f' && resolutionStr[i + 1] == 'F'  || resolutionStr[i] == 'F' && resolutionStr[i + 1] == 'f' ||
-                resolutionStr[i] == 'b' && resolutionStr[i + 1] == 'B'  || resolutionStr[i] == 'B' && resolutionStr[i + 1] == 'b' ||
-                resolutionStr[i] == 'u' && resolutionStr[i + 1] == 'U'  || resolutionStr[i] == 'U' && resolutionStr[i + 1] == 'u' ||
-                resolutionStr[i] == 'd' && resolutionStr[i + 1] == 'D'  || resolutionStr[i] == 'D' && resolutionStr[i + 1] == 'd') {
-                  resolutionStr.remove(i, 2);
-                  i++;
-                  flag = true;
-                  //Serial.print("  C1  "); 
-              } else if((resolutionStr[i] == resolutionStr[i + 1]) && (resolutionStr[i] == resolutionStr[i + 2])) {
-                  if(isUpperCase(resolutionStr[i])) {
-                    resolutionStr[i] = toLowerCase(resolutionStr[i]);
-                  } else {
-                    resolutionStr[i] = toUpperCase(resolutionStr[i]);
-                  }
-                  resolutionStr.remove(i + 1, 2);
-                  i++;
-                  flag = true;
-                  //Serial.print("  C2  "); 
-              } else if((resolutionStr[i] == resolutionStr[i + 1]) &&  (resolutionStr[i] == resolutionStr[i + 2]) && (resolutionStr[i] == resolutionStr[i + 3])) {
-                resolutionStr.remove(i, 4);
+            if(resolutionStr[i] == 'r' && resolutionStr[i + 1] == 'R' || resolutionStr[i] == 'R' && resolutionStr[i + 1] == 'r' ||    // Remove inverses
+              resolutionStr[i] == 'l' && resolutionStr[i + 1] == 'L'  || resolutionStr[i] == 'L' && resolutionStr[i + 1] == 'l' ||
+              resolutionStr[i] == 'f' && resolutionStr[i + 1] == 'F'  || resolutionStr[i] == 'F' && resolutionStr[i + 1] == 'f' ||
+              resolutionStr[i] == 'b' && resolutionStr[i + 1] == 'B'  || resolutionStr[i] == 'B' && resolutionStr[i + 1] == 'b' ||
+              resolutionStr[i] == 'u' && resolutionStr[i + 1] == 'U'  || resolutionStr[i] == 'U' && resolutionStr[i + 1] == 'u' ||
+              resolutionStr[i] == 'd' && resolutionStr[i + 1] == 'D'  || resolutionStr[i] == 'D' && resolutionStr[i + 1] == 'd') {
+                resolutionStr.remove(i, 2);
                 i++;
                 flag = true;
-                //Serial.print("  C3  "); 
-              }
-              break;
-            case 1:
-              if(resolutionStr[i] == 'r' && resolutionStr[i + 1] == 'r' || resolutionStr[i] == 'R' && resolutionStr[i + 1] == 'R' ||
-                resolutionStr[i] == 'l' && resolutionStr[i + 1] == 'l'  || resolutionStr[i] == 'L' && resolutionStr[i + 1] == 'L' ||
-                resolutionStr[i] == 'f' && resolutionStr[i + 1] == 'F'  || resolutionStr[i] == 'F' && resolutionStr[i + 1] == 'F' ||
-                resolutionStr[i] == 'b' && resolutionStr[i + 1] == 'b'  || resolutionStr[i] == 'B' && resolutionStr[i + 1] == 'B' ||
-                resolutionStr[i] == 'u' && resolutionStr[i + 1] == 'u'  || resolutionStr[i] == 'U' && resolutionStr[i + 1] == 'U' ||
-                resolutionStr[i] == 'd' && resolutionStr[i + 1] == 'd'  || resolutionStr[i] == 'D' && resolutionStr[i + 1] == 'D') {
-                  resolutionStr[i + 1] = '2';
-                  i++;
-                  flag = true;
-                  //Serial.print("  C4  "); 
-              } 
-              break;
-            case 2:
-              return;
-              break;
+            } else if((resolutionStr[i] == resolutionStr[i + 1]) && (resolutionStr[i] == resolutionStr[i + 2])) {                    // Replace inverses
+                if(isUpperCase(resolutionStr[i])) {
+                  resolutionStr[i] = toLowerCase(resolutionStr[i]);
+                } else {
+                  resolutionStr[i] = toUpperCase(resolutionStr[i]);
+                }
+                resolutionStr.remove(i + 1, 2);
+                i++;
+                flag = true;
+            } else if((resolutionStr[i] == resolutionStr[i + 1]) &&  (resolutionStr[i] == resolutionStr[i + 2]) && (resolutionStr[i] == resolutionStr[i + 3])) {
+              resolutionStr.remove(i, 4);
+              i++;
+              flag = true;
+            } else if((resolutionStr[i] == 'f' || resolutionStr[i] == 'F') && resolutionStr[i] == resolutionStr[i + 1]) {
+              resolutionStr[i] = ':';
+              resolutionStr.remove(i + 1, 1);
+              i++;
+              flag = true;
+            } else if((resolutionStr[i] == 'b' || resolutionStr[i] == 'B') && resolutionStr[i] == resolutionStr[i + 1]) {
+              resolutionStr[i] = ';';
+              resolutionStr.remove(i + 1, 1);
+              i++;
+              flag = true;
             }
           }
-          //Serial.print("\nResolução = ");  Serial.print(resolutionStr);  Serial.print(F("\n")); 
-       }
-       
-       //Rubik_ProcessStr(caze + 1);
+      }
     }
   
     void SolveSequence() {
       CopyCube(Rubik, Rubik_ToSolve);
-      Print();
+      if(!phoneMode) Print();
       Solve_WhiteCross_1 ();
       Solve_WhiteCross_2 ();
       Solve_WhiteCross_3 ();
@@ -229,31 +237,24 @@ class Cubo {
       Solve_PLL();
       ProcessStr();
       CopyCube(Rubik_ToSolve, Rubik);
-      Serial.println("test" + resolutionStr);
+      if(!phoneMode) Serial.println("test\n" + resolutionStr);
+      blink(5);
       for(int i = 0; i < resolutionStr.length(); i++) {
+        //await('H');    
         Rubik_rotate(resolutionStr.charAt(i), true);
       }
-      Serial.print("\nResolução = ");  Serial.print(resolutionStr);  Serial.print(F("\n")); 
-      Serial.print("        (HTM = ");  Serial.print(HTM);  Serial.print(F(")")); 
-      Serial.print("  (QTM = ");  Serial.print(QTM);  Serial.print(F(")"));  Serial.print(F("\n"));
-      Print();
-    }
-  
-    void Sramble(int rotations_count) {
-      static const char rotations[] = {'f', 'F', 'r', 'R', 'u', 'U', 'l', 'L', 'd', 'D', 'b', 'B'};
-    
-      randomSeed(millis()); // iniciar gerador peseudo-aleatório
-      
-      for (int i = 0; i < rotations_count; i++) {
-        char i_rot = random(sizeof(rotations)); // gerar nÃºmero aleatÃ³rio entre 0 e o número de opÃ§Ãµes de rotaÃ§Ã£o (tamanho do array rotations - 12)
-        Rubik_rotate(rotations[i_rot], false);
+      if(!phoneMode) {
+        Serial.print("\nResolução = ");  Serial.print(resolutionStr);  Serial.print(F("\n")); 
+        Serial.print("        (HTM = ");  Serial.print(HTM);  Serial.print(F(")")); 
+        Serial.print("  (QTM = ");  Serial.print(QTM);  Serial.print(F(")"));  Serial.print(F("\n"));
+        Print();
       }
-      Serial.println(F("\n"));
+      
     }
 
     void CopyCube(unsigned char de[][9], unsigned char para[][9]) {
 
-      Serial.print(F("A")); 
+      if(!phoneMode) Serial.print(F("A")); 
       for (int face = 0; face < RF_TOTAL_FACES; face ++) {
         for (int i = 0; i < 9; i++) {
             para[face][i] = de[face][i];

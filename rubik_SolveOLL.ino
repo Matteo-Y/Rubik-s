@@ -73,67 +73,6 @@ const char * const OLL_LUT[64] PROGMEM = {
   OLL_60, OLL_61, OLL_62, OLL_63,
 };
 
-
-//const char *OLL_LUT[] ={
-//  "RuuRRFRfuurFRf";                        //  0   |----------|
-//  "rUULflUULFlUUR";                        //  1   |          |
-//  "UFURurfUFRUruf";                        //  2   |    ##    |
-//  "UFURurfuFRUruf";                        //  3   |          |
-//  "RuurflUULFRuur";                        //  4   |----------|
-//  "ruuFRUruffUUFR";                        //  5  
-//  "uLflFuuFuRurf";                         //  6  
-//  "lrfUUllUUllUUllFLR";                    //  7
-//  "FRUruRfLFrfl";                          //  8   |----------|                     
-//  "uuFURurURurf";                          //  9   |          |
-//  "FURuuruRUrf";                           // 10   | ## ## ## |
-//  "uuLFlRUruLfl";                          // 11   |          |
-//  "FRUruf";                   // V         // 12   |----------|
-//  "RUrurFRf";                              // 13
-//  "uuLfluLUFul";                           // 14
-//  "lRUruLrFRf";                            // 15
-//  "RuurruRuruuFRf";                        // 16   |----------|          //Mudar de alg. Manual nÂº15 e nÂº16
-//  "UUruRurUfUFR";                          // 17   |    ##    |
-//  "UrfRluLUrFR";                           // 18   |    ##    |
-//  "rFRUrfRFuf";                            // 19   |    ##    |
-//  "UUrurFRfUR";                            // 20   |----------|
-//  "UUrrdRurDFRfUR";                        // 21   
-//  "UrFRUrufUR";                            // 22
-//  "UlRUruLrFRf";                           // 23
-//  "uufLFluuFFrfRf";                        // 24   |----------|              
-//  "FRUruRUruf";                            // 25   |    ##    |
-//  "luuLuuLflF";                            // 26   | ## ##    |
-//  "uuFRUrufUFRUruf";                       // 27   |          |
-//  "urURUUrufUFUR";                         // 28   |----------|
-//  "UrFRfRUUrufuF";                         // 29
-//  "uRUrufUUFURUr";                         // 30
-//  "FRUruFFluLUF";                          // 31
-//  "UUfluLUlULuluLF";                       // 32   |----------|
-//  "uulUULUluLuuLflF";                      // 33   |          |
-//  "UUbrrFRfRB";                            // 34   | ## ##    |
-//  "RUrrFRffUF";                            // 35   |    ##    |
-//  "uLUlULuulfluLUF";                       // 36   |----------|
-//  "urrUrbRurrURBr";                        // 37
-//  "uRUUrrFRfRuur";                         // 38
-//  "UFRUruFFluLUF";                         // 39
-//  "fLFlUUffrfRf";                          // 40   |----------|
-//  "RUrrFRfUFrfR";                          // 41   |          |
-//  "ufluLUFUFRUruf";                        // 42   |    ## ## |
-//  "ufLUlUUlUUL";                           // 43   |    ##    |
-//  "uuFURurf";                              // 44   |----------|
-//  "uuLUfulULFl";                           // 45
-//  "LUlULululBLb";                          // 46
-//  "uuFRUruFFluLUF";                        // 47
-//  "fluLUlULuluLF";                         // 48   |----------|
-//  "uflULUluLulULF";                        // 49   |    ##    |
-//  "uuRUrUrFRfRuur";                        // 50   |    ## ## |
-//  "urufUFuRuruuR";                         // 51   |          |
-//  "UUfulULF";                              // 52   |----------|        
-//  "ruFURurfR";                             // 53
-//  "uFrfRURur";                             // 54
-//  "uFRUruFFluLUF";                         // 55
-//};
-
-
 int Solve_OLL() {
   int e = -1;
   int c = -1;

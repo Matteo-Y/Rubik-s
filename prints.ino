@@ -36,25 +36,27 @@ void Rubik_PrintLineFeed () {
 }
 
 void Cubo::Print() {
-  int i;
-  for (i = 6; i >= 0; i -= 3) {
-    Rubik_PrintSpace(); Rubik_PrintSpace(); Rubik_PrintSpace(); 
-    Rubik_PrintColor (Rubik[RF_UP][i + 0]); Rubik_PrintColor (Rubik[RF_UP][i + 1]); Rubik_PrintColor (Rubik[RF_UP][i + 2]);
-    Rubik_PrintLineFeed();
-  }
-  Rubik_PrintLineFeed ();
-  for (i = 6; i >= 0; i -= 3) {
-    Rubik_PrintColor(Rubik[RF_LEFT][i + 0]);  Rubik_PrintColor(Rubik[RF_LEFT][i + 1]);  Rubik_PrintColor(Rubik[RF_LEFT][i + 2]);  Rubik_PrintSpace();
-    Rubik_PrintColor(Rubik[RF_FRONT][i + 0]); Rubik_PrintColor(Rubik[RF_FRONT][i + 1]); Rubik_PrintColor(Rubik[RF_FRONT][i + 2]); Rubik_PrintSpace();
-    Rubik_PrintColor(Rubik[RF_RIGHT][i + 0]); Rubik_PrintColor(Rubik[RF_RIGHT][i + 1]); Rubik_PrintColor(Rubik[RF_RIGHT][i + 2]); Rubik_PrintSpace();
-    Rubik_PrintColor(Rubik[RF_BACK][i + 0]);  Rubik_PrintColor(Rubik[RF_BACK][i + 1]);  Rubik_PrintColor(Rubik[RF_BACK][i + 2]);  Rubik_PrintSpace();
+  if(!phoneMode) {
+    int i;
+    for (i = 6; i >= 0; i -= 3) {
+      Rubik_PrintSpace(); Rubik_PrintSpace(); Rubik_PrintSpace(); 
+      Rubik_PrintColor (Rubik[RF_UP][i + 0]); Rubik_PrintColor (Rubik[RF_UP][i + 1]); Rubik_PrintColor (Rubik[RF_UP][i + 2]);
+      Rubik_PrintLineFeed();
+    }
     Rubik_PrintLineFeed ();
-  }
-  Rubik_PrintLineFeed ();
-  for (i = 6; i >= 0; i -= 3) {
-    Rubik_PrintSpace(); Rubik_PrintSpace(); Rubik_PrintSpace();
-    Rubik_PrintColor(Rubik[RF_DOWN][i + 0]); Rubik_PrintColor(Rubik[RF_DOWN][i + 1]); Rubik_PrintColor(Rubik[RF_DOWN][i + 2]);
+    for (i = 6; i >= 0; i -= 3) {
+      Rubik_PrintColor(Rubik[RF_LEFT][i + 0]);  Rubik_PrintColor(Rubik[RF_LEFT][i + 1]);  Rubik_PrintColor(Rubik[RF_LEFT][i + 2]);  Rubik_PrintSpace();
+      Rubik_PrintColor(Rubik[RF_FRONT][i + 0]); Rubik_PrintColor(Rubik[RF_FRONT][i + 1]); Rubik_PrintColor(Rubik[RF_FRONT][i + 2]); Rubik_PrintSpace();
+      Rubik_PrintColor(Rubik[RF_RIGHT][i + 0]); Rubik_PrintColor(Rubik[RF_RIGHT][i + 1]); Rubik_PrintColor(Rubik[RF_RIGHT][i + 2]); Rubik_PrintSpace();
+      Rubik_PrintColor(Rubik[RF_BACK][i + 0]);  Rubik_PrintColor(Rubik[RF_BACK][i + 1]);  Rubik_PrintColor(Rubik[RF_BACK][i + 2]);  Rubik_PrintSpace();
+      Rubik_PrintLineFeed ();
+    }
     Rubik_PrintLineFeed ();
+    for (i = 6; i >= 0; i -= 3) {
+      Rubik_PrintSpace(); Rubik_PrintSpace(); Rubik_PrintSpace();
+      Rubik_PrintColor(Rubik[RF_DOWN][i + 0]); Rubik_PrintColor(Rubik[RF_DOWN][i + 1]); Rubik_PrintColor(Rubik[RF_DOWN][i + 2]);
+      Rubik_PrintLineFeed ();
+    }
+    Rubik_PrintLineFeed (); Rubik_PrintLineFeed ();
   }
-  Rubik_PrintLineFeed (); Rubik_PrintLineFeed ();
 }
