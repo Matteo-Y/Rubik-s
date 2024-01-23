@@ -85,9 +85,9 @@ Rotater Up_Left(SERVO_PINS[2]);              //motor para rodar a face da esquer
 Rotater Up_Front(SERVO_PINS[3]);             //motor para rodar a face da frente no pino 3
 
 Pusher Down_Right(SERVO_PINS[4], 0);            //motor para andar a face da direita no pino 4
-Pusher Down_Back(SERVO_PINS[5], 20);             //motor para andar a face de trás no pino 5
-Pusher Down_Left(SERVO_PINS[6], 30);             //motor para andar a face da esquerda no pino 6
-Pusher Down_Front(SERVO_PINS[7], -13);          //motor para andar a face da frente no pino 7
+Pusher Down_Back(SERVO_PINS[5], 0);             //motor para andar a face de trás no pino 5
+Pusher Down_Left(SERVO_PINS[6], 0);             //motor para andar a face da esquerda no pino 6
+Pusher Down_Front(SERVO_PINS[7], 0);          //motor para andar a face da frente no pino 7
 
 
 void init_uppers() {
