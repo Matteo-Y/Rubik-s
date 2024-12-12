@@ -1,0 +1,2 @@
+ninja: Entering directory `C:\Users\matte\AndroidStudioProjects\livefeed\OpenCV\.cxx\RelWithDebInfo\773581g3\x86'
+ninja: no work to do.
