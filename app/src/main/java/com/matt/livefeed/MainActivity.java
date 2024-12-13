@@ -17,10 +17,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,13 +32,11 @@ import org.opencv.android.JavaCameraView;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -68,7 +63,7 @@ public class MainActivity extends CameraActivity {
     TextView lastSend;
     Button connectButton;
     Button captureButton;
-    Button disconnectButton;
+    Button gripButton;
 
     boolean captureFrame = false;
 
@@ -97,11 +92,11 @@ public class MainActivity extends CameraActivity {
 
         connectButton = findViewById(R.id.connect);
         captureButton = findViewById(R.id.capture);
-        disconnectButton = findViewById(R.id.disconnect);
+        gripButton = findViewById(R.id.grip_toggle);
 
         connectButton.setOnClickListener(v -> connectUSB());
         captureButton.setOnClickListener((v) -> captureFrame = true);
-        disconnectButton.setOnClickListener((v) -> disconnectUSB());
+        gripButton.setOnClickListener((v) -> writeUSB("T"));
 
         connectButton.setOnTouchListener((v, event) -> {
             if(event.getAction() == MotionEvent.ACTION_DOWN) connectButton.setBackgroundColor(Color.rgb(220, 220, 220));
@@ -113,9 +108,9 @@ public class MainActivity extends CameraActivity {
             else if(event.getAction() == MotionEvent.ACTION_UP) captureButton.setBackgroundColor(Color.rgb(255, 255, 255));
             return false;
         });
-        disconnectButton.setOnTouchListener((v, event) -> {
-            if(event.getAction() == MotionEvent.ACTION_DOWN) disconnectButton.setBackgroundColor(Color.rgb(220, 220, 220));
-            else if(event.getAction() == MotionEvent.ACTION_UP) disconnectButton.setBackgroundColor(Color.rgb(255, 255, 255));
+        gripButton.setOnTouchListener((v, event) -> {
+            if(event.getAction() == MotionEvent.ACTION_DOWN) gripButton.setBackgroundColor(Color.rgb(220, 220, 220));
+            else if(event.getAction() == MotionEvent.ACTION_UP) gripButton.setBackgroundColor(Color.rgb(255, 255, 255));
             return false;
         });
 
